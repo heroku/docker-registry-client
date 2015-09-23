@@ -1,0 +1,33 @@
+{
+	"ImportPath": "github.com/heroku/docker-registry-client",
+	"GoVersion": "go1.5",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.8.7",
+			"Rev": "418b41d23a1bf978c06faea5313ba194650ac088"
+		},
+		{
+			"ImportPath": "github.com/docker/distribution/digest",
+			"Comment": "v2.1.0",
+			"Rev": "9ca7921603852314b18a6ecc19f91806935f34bd"
+		},
+		{
+			"ImportPath": "github.com/docker/distribution/manifest",
+			"Comment": "v2.1.0",
+			"Rev": "9ca7921603852314b18a6ecc19f91806935f34bd"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/tarsum",
+			"Comment": "v1.4.1-6199-g59311fa",
+			"Rev": "59311faaed4e3384fc8da738a57a25f17ae07e05"
+		},
+		{
+			"ImportPath": "github.com/docker/libtrust",
+			"Rev": "9cbd2a1374f46905c68a4eb3694a130610adc62a"
+		}
+	]
+}
