@@ -23,6 +23,7 @@ func New(registryUrl, username, password string) (*Registry, error) {
 	}
 	transport = &BasicTransport{
 		Transport: transport,
+		URL:       url,
 		Username:  username,
 		Password:  password,
 	}
@@ -58,7 +59,7 @@ func (r *Registry) Ping() error {
 		defer resp.Body.Close()
 	}
 	if err != nil {
-		
+
 	}
 	return err
 }
