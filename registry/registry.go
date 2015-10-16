@@ -1,6 +1,7 @@
 package registry
 
 import (
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,9 +14,23 @@ type Registry struct {
 }
 
 func New(registryUrl, username, password string) (*Registry, error) {
-	url := strings.TrimSuffix(registryUrl, "/")
-
 	transport := http.DefaultTransport
+
+	return newFromTransport(registryUrl, username, password, transport)
+}
+
+func NewInsecure(registryUrl, username, password string) (*Registry, error) {
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+
+	return newFromTransport(registryUrl, username, password, transport)
+}
+
+func newFromTransport(registryUrl, username, password string, transport http.RoundTripper) (*Registry, error) {
+	url := strings.TrimSuffix(registryUrl, "/")
 	transport = &TokenTransport{
 		Transport: transport,
 		Username:  username,
