@@ -69,7 +69,7 @@ func (t *TokenTransport) auth(authService *authService) (string, *http.Response,
 }
 
 func (t *TokenTransport) retry(req *http.Request, token string) (*http.Response, error) {
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	resp, err := t.Transport.RoundTrip(req)
 	return resp, err
 }
