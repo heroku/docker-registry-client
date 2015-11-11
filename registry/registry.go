@@ -8,24 +8,46 @@ import (
 	"strings"
 )
 
+type LogfCallback func(format string, args... interface{})
+
+/*
+ * Discard log messages silently.
+ */
+func Quiet(format string, args... interface{}) {
+	/* discard logs */
+}
+
+/*
+ * Pass log messages along to Go's "log" module.
+ */
+func Log(format string, args ...interface{}) {
+	log.Printf(format, args...)
+}
+
 type Registry struct {
 	URL    string
 	Client *http.Client
-	Quiet  bool
+	Logf   LogfCallback
 }
 
+/*
+ * Create a new Registry with the given URL and credentials, then Ping()s it
+ * before returning it to verify that the registry is available.
+ *
+ * You can, alternately, construct a Registry manually by populating the fields.
+ * This passes http.DefaultTransport to WrapTransport when creating the
+ * http.Client.
+ */
 func New(registryUrl, username, password string) (*Registry, error) {
 	transport := http.DefaultTransport
 
-	return newFromTransport(registryUrl, username, password, transport, false)
+	return newFromTransport(registryUrl, username, password, transport, Log)
 }
 
-func NewQuiet(registryUrl, username, password string) (*Registry, error) {
-	transport := http.DefaultTransport
-
-	return newFromTransport(registryUrl, username, password, transport, true)
-}
-
+/*
+ * Create a new Registry, as with New, using an http.Transport that disables
+ * SSL certificate verification.
+ */
 func NewInsecure(registryUrl, username, password string) (*Registry, error) {
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
@@ -33,32 +55,42 @@ func NewInsecure(registryUrl, username, password string) (*Registry, error) {
 		},
 	}
 
-	return newFromTransport(registryUrl, username, password, transport, false)
+	return newFromTransport(registryUrl, username, password, transport, Log)
 }
 
-func newFromTransport(registryUrl, username, password string, transport http.RoundTripper, quiet bool) (*Registry, error) {
-	url := strings.TrimSuffix(registryUrl, "/")
-	transport = &TokenTransport{
+/*
+ * Given an existing http.RoundTripper such as http.DefaultTransport, build the
+ * transport stack necessary to authenticate to the Docker registry API. This
+ * adds in support for OAuth bearer tokens and HTTP Basic auth, and sets up
+ * error handling this library relies on.
+ */
+func WrapTransport(transport http.RoundTripper, url, username, password string) http.RoundTripper {
+	tokenTransport := &TokenTransport{
 		Transport: transport,
 		Username:  username,
 		Password:  password,
 	}
-	transport = &BasicTransport{
-		Transport: transport,
+	basicAuthTransport := &BasicTransport{
+		Transport: tokenTransport,
 		URL:       url,
 		Username:  username,
 		Password:  password,
 	}
-	transport = &ErrorTransport{
-		Transport: transport,
+	errorTransport := &ErrorTransport{
+		Transport: basicAuthTransport,
 	}
+	return errorTransport
+}
 
+func newFromTransport(registryUrl, username, password string, transport http.RoundTripper, logf LogfCallback) (*Registry, error) {
+	url := strings.TrimSuffix(registryUrl, "/")
+	transport = WrapTransport(transport, url, username, password)
 	registry := &Registry{
 		URL: url,
 		Client: &http.Client{
 			Transport: transport,
 		},
-		Quiet: quiet,
+		Logf: logf,
 	}
 
 	if err := registry.Ping(); err != nil {
@@ -76,9 +108,7 @@ func (r *Registry) url(pathTemplate string, args ...interface{}) string {
 
 func (r *Registry) Ping() error {
 	url := r.url("/v2/")
-	if !r.Quiet {
-		log.Printf("registry.ping url=%s", url)
-	}
+	r.Logf("registry.ping url=%s", url)
 	resp, err := r.Client.Get(url)
 	if resp != nil {
 		defer resp.Body.Close()
