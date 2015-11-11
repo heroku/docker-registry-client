@@ -3,14 +3,14 @@ package registry
 import (
 	"bytes"
 	"io/ioutil"
-	"github.com/docker/distribution/manifest"
-	"log"
 	"net/http"
+
+	"github.com/docker/distribution/manifest"
 )
 
 func (registry *Registry) Manifest(repository, reference string) (*manifest.SignedManifest, error) {
 	url := registry.url("/v2/%s/manifests/%s", repository, reference)
-	log.Printf("registry.manifest.get url=%s repository=%s reference=%s", url, repository, reference)
+	registry.Logf("registry.manifest.get url=%s repository=%s reference=%s", url, repository, reference)
 
 	resp, err := registry.Client.Get(url)
 	if resp != nil {
@@ -36,7 +36,7 @@ func (registry *Registry) Manifest(repository, reference string) (*manifest.Sign
 
 func (registry *Registry) PutManifest(repository, reference string, signedManifest *manifest.SignedManifest) error {
 	url := registry.url("/v2/%s/manifests/%s", repository, reference)
-	log.Printf("registry.manifest.put url=%s repository=%s reference=%s", url, repository, reference)
+	registry.Logf("registry.manifest.put url=%s repository=%s reference=%s", url, repository, reference)
 
 	body, err := signedManifest.MarshalJSON()
 	if err != nil {
