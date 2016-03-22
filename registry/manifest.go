@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/docker/distribution/manifest"
+	manifest "github.com/docker/distribution/manifest/schema1"
 )
 
 func (registry *Registry) Manifest(repository, reference string) (*manifest.SignedManifest, error) {
@@ -49,7 +49,7 @@ func (registry *Registry) PutManifest(repository, reference string, signedManife
 		return err
 	}
 
-	req.Header.Set("Content-Type", manifest.ManifestMediaType)
+	req.Header.Set("Content-Type", manifest.MediaTypeManifest)
 	resp, err := registry.Client.Do(req)
 	if resp != nil {
 		defer resp.Body.Close()
