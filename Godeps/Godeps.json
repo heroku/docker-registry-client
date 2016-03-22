@@ -11,23 +11,55 @@
 			"Rev": "418b41d23a1bf978c06faea5313ba194650ac088"
 		},
 		{
+			"ImportPath": "github.com/docker/distribution",
+			"Comment": "v2.3.0-rc.2-152-gc8d8e7e",
+			"Rev": "c8d8e7e357a1e5cf39aec1cfd4b3aef82414b3fc"
+		},
+		{
+			"ImportPath": "github.com/docker/distribution/context",
+			"Comment": "v2.3.0-rc.2-152-gc8d8e7e",
+			"Rev": "c8d8e7e357a1e5cf39aec1cfd4b3aef82414b3fc"
+		},
+		{
 			"ImportPath": "github.com/docker/distribution/digest",
-			"Comment": "v2.1.0",
-			"Rev": "9ca7921603852314b18a6ecc19f91806935f34bd"
+			"Comment": "v2.3.0-rc.2-152-gc8d8e7e",
+			"Rev": "c8d8e7e357a1e5cf39aec1cfd4b3aef82414b3fc"
 		},
 		{
 			"ImportPath": "github.com/docker/distribution/manifest",
-			"Comment": "v2.1.0",
-			"Rev": "9ca7921603852314b18a6ecc19f91806935f34bd"
+			"Comment": "v2.3.0-rc.2-152-gc8d8e7e",
+			"Rev": "c8d8e7e357a1e5cf39aec1cfd4b3aef82414b3fc"
 		},
 		{
-			"ImportPath": "github.com/docker/docker/pkg/tarsum",
-			"Comment": "v1.4.1-6199-g59311fa",
-			"Rev": "59311faaed4e3384fc8da738a57a25f17ae07e05"
+			"ImportPath": "github.com/docker/distribution/manifest/schema1",
+			"Comment": "v2.3.0-rc.2-152-gc8d8e7e",
+			"Rev": "c8d8e7e357a1e5cf39aec1cfd4b3aef82414b3fc"
+		},
+		{
+			"ImportPath": "github.com/docker/distribution/reference",
+			"Comment": "v2.3.0-rc.2-152-gc8d8e7e",
+			"Rev": "c8d8e7e357a1e5cf39aec1cfd4b3aef82414b3fc"
+		},
+		{
+			"ImportPath": "github.com/docker/distribution/uuid",
+			"Comment": "v2.3.0-rc.2-152-gc8d8e7e",
+			"Rev": "c8d8e7e357a1e5cf39aec1cfd4b3aef82414b3fc"
 		},
 		{
 			"ImportPath": "github.com/docker/libtrust",
 			"Rev": "9cbd2a1374f46905c68a4eb3694a130610adc62a"
+		},
+		{
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "14f550f51af52180c2eefed15e5fd18d63c0a64a"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "e444e69cbd2e2e3e0749a2f3c717cec491552bbf"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "1dfe7915deaf3f80b962c163b918868d8a6d8974"
 		}
 	]
 }
