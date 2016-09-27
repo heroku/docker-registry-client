@@ -29,6 +29,14 @@ API, which may fail. Failures return non-`nil` err values.
 Authentication supports both HTTP Basic authentication and OAuth2 token
 negotiation.
 
+## Listing Repositories
+
+```go
+repositories, err := hub.Repositories()
+```
+
+The repositories will be returned as a slice of `string`s.
+
 ## Listing Tags
 
 Each Docker repository has a set of tags -- named images that can be downloaded.
