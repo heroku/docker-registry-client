@@ -14,7 +14,7 @@ func (registry *Registry) Repositories() (repos []string, err error) {
 		switch err {
 		case ErrNoMorePages:
 			repos = append(repos, response.Repositories...)
-			return
+			return repos, nil
 		case nil:
 			repos = append(repos, response.Repositories...)
 			continue
