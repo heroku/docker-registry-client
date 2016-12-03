@@ -34,6 +34,35 @@ func (registry *Registry) Manifest(repository, reference string) (*manifest.Sign
 	return signedManifest, nil
 }
 
+func (registry *Registry) ManifestDigest(repository, reference string) (string, error) {
+	url := registry.url("/v2/%s/manifests/%s", repository, reference)
+	resp, err := registry.Client.Head(url)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return "", err
+	}
+	return resp.Header.Get("Docker-Content-Digest"), nil
+}
+
+func (registry *Registry) DeleteManifest(repository, reference string) error {
+	digest, err := registry.ManifestDigest(repository, reference)
+	url := registry.url("/v2/%s/manifests/%s", repository, digest)
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := registry.Client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (registry *Registry) PutManifest(repository, reference string, signedManifest *manifest.SignedManifest) error {
 	url := registry.url("/v2/%s/manifests/%s", repository, reference)
 	registry.Logf("registry.manifest.put url=%s repository=%s reference=%s", url, repository, reference)
