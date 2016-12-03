@@ -49,12 +49,7 @@ func (registry *Registry) ManifestDigest(repository, reference string) (digest.D
 	return digest.ParseDigest(resp.Header.Get("Docker-Content-Digest"))
 }
 
-func (registry *Registry) DeleteManifest(repository, reference string) error {
-	digest, err := registry.ManifestDigest(repository, reference)
-	if err != nil {
-		return err
-	}
-
+func (registry *Registry) DeleteManifest(repository string, digest digest.Digest) error {
 	url := registry.url("/v2/%s/manifests/%s", repository, digest)
 	registry.Logf("registry.manifest.delete url=%s repository=%s reference=%s", url, repository, digest)
 
