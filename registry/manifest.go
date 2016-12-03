@@ -36,6 +36,8 @@ func (registry *Registry) Manifest(repository, reference string) (*manifest.Sign
 
 func (registry *Registry) ManifestDigest(repository, reference string) (string, error) {
 	url := registry.url("/v2/%s/manifests/%s", repository, reference)
+	registry.Logf("registry.manifest.head url=%s repository=%s reference=%s", url, repository, reference)
+
 	resp, err := registry.Client.Head(url)
 	if resp != nil {
 		defer resp.Body.Close()
@@ -48,7 +50,13 @@ func (registry *Registry) ManifestDigest(repository, reference string) (string, 
 
 func (registry *Registry) DeleteManifest(repository, reference string) error {
 	digest, err := registry.ManifestDigest(repository, reference)
+	if err != nil {
+		return err
+	}
+
 	url := registry.url("/v2/%s/manifests/%s", repository, digest)
+	registry.Logf("registry.manifest.delete url=%s repository=%s reference=%s", url, repository, digest)
+
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
 		return err
