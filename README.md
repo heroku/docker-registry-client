@@ -78,6 +78,8 @@ digest, err := hub.ManifestDigest("heroku/cedar", "14")
 err = hub.DeleteManifest("heroku/cedar", digest)
 ```
 
+Please notice that, as specified by the Registry v2 API, this call doesn't actually remove the fs layers used by the image.
+
 ## Downloading Layers
 
 Each manifest contains a list of layers, filesystem images that Docker will
