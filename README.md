@@ -59,6 +59,25 @@ manifest, err := hub.Manifest("heroku/cedar", "14")
 The returned manifest will be a `manifest.SignedManifest` pointer. For details,
 see the `github.com/docker/distribution/manifest` library.
 
+## Retrieving Manifest Digest
+
+A manifest is identified by a digest.
+
+```go
+digest, err := hub.ManifestDigest("heroku/cedar", "14")
+```
+
+The returned digest will be a `digest.Digest`. See `github.com/docker/distribution/digest`.
+
+## Deleting Manifest
+
+To delete a manifest
+
+```go
+digest, err := hub.ManifestDigest("heroku/cedar", "14")
+err = hub.DeleteManifest("heroku/cedar", digest)
+```
+
 ## Downloading Layers
 
 Each manifest contains a list of layers, filesystem images that Docker will
