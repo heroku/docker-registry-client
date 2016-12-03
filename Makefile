@@ -1,5 +1,5 @@
 GO_FILES := $(shell find . -type f -name '*.go' -not -path "./Godeps/*" -not -path "./vendor/*")
-GO_PACKAGES := $(shell go list ./... | sed "s/github.com\/lorenzobenvenuti\/docker-registry-client/./" | grep -v "^./vendor/")
+GO_PACKAGES := $(shell go list ./... | sed "s/github.com\/heroku\/docker-registry-client/./" | grep -v "^./vendor/")
 
 build:
 	go build -v $(GO_PACKAGES)
