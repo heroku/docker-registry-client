@@ -56,6 +56,12 @@ configuration for that tag.
 manifest, err := hub.Manifest("heroku/cedar", "14")
 ```
 
+Manifests V2
+
+```go
+manifest, err := hub.ManifestV2("heroku/cedar", "14")
+```
+
 The returned manifest will be a `manifest.SignedManifest` pointer. For details,
 see the `github.com/docker/distribution/manifest` library.
 
