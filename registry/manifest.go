@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/docker/distribution/digest"
 	manifestV1 "github.com/docker/distribution/manifest/schema1"
 	manifestV2 "github.com/docker/distribution/manifest/schema2"
 )
@@ -66,6 +67,38 @@ func (registry *Registry) ManifestV2(repository, reference string) (*manifestV2.
 		return nil, err
 	}
 	return deserialized, nil
+}
+
+func (registry *Registry) ManifestDigest(repository, reference string) (digest.Digest, error) {
+	url := registry.url("/v2/%s/manifests/%s", repository, reference)
+	registry.Logf("registry.manifest.head url=%s repository=%s reference=%s", url, repository, reference)
+
+	resp, err := registry.Client.Head(url)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return "", err
+	}
+	return digest.ParseDigest(resp.Header.Get("Docker-Content-Digest"))
+}
+
+func (registry *Registry) DeleteManifest(repository string, digest digest.Digest) error {
+	url := registry.url("/v2/%s/manifests/%s", repository, digest)
+	registry.Logf("registry.manifest.delete url=%s repository=%s reference=%s", url, repository, digest)
+
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := registry.Client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (registry *Registry) PutManifest(repository, reference string, signedManifest *manifestV1.SignedManifest) error {
