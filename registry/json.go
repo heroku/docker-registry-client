@@ -42,7 +42,8 @@ func (registry *Registry) getPaginatedJson(url string, response interface{}) (st
 	if err != nil {
 		return "", err
 	}
-	return getNextLink(resp)
+	newUrl, err := getNextLink(resp)
+	return registry.URL + newUrl, err
 }
 
 // Matches an RFC 5988 (https://tools.ietf.org/html/rfc5988#section-5)
