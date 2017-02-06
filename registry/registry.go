@@ -38,24 +38,24 @@ type Registry struct {
  * This passes http.DefaultTransport to WrapTransport when creating the
  * http.Client.
  */
-func New(registryUrl, username, password string) (*Registry, error) {
+func New(registryUrl, username, password string, log func(string, ...interface{})) (*Registry, error) {
 	transport := http.DefaultTransport
 
-	return newFromTransport(registryUrl, username, password, transport, Log)
+	return newFromTransport(registryUrl, username, password, transport, log)
 }
 
 /*
  * Create a new Registry, as with New, using an http.Transport that disables
  * SSL certificate verification.
  */
-func NewInsecure(registryUrl, username, password string) (*Registry, error) {
+func NewInsecure(registryUrl, username, password string, log func(string, ...interface{})) (*Registry, error) {
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
 	}
 
-	return newFromTransport(registryUrl, username, password, transport, Log)
+	return newFromTransport(registryUrl, username, password, transport, log)
 }
 
 /*
