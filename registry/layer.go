@@ -1,12 +1,14 @@
 package registry
 
 import (
+	_ "crypto/sha256"
+	_ "crypto/sha512"
 	"io"
 	"net/http"
 	"net/url"
 
 	"github.com/docker/distribution"
-	"github.com/docker/distribution/digest"
+	"github.com/opencontainers/go-digest"
 )
 
 func (registry *Registry) DownloadLayer(repository string, digest digest.Digest) (io.ReadCloser, error) {
