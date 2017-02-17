@@ -1,0 +1,79 @@
+{
+	"ImportPath": "github.com/chriskite/docker-registry-client/registry",
+	"GoVersion": "go1.7",
+	"GodepVersion": "v79",
+	"Deps": [
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.11.1-2-g080ca65",
+			"Rev": "080ca65fb5a85b6f2b42053b9a895d462ed0ddff"
+		},
+		{
+			"ImportPath": "github.com/docker/distribution",
+			"Comment": "v2.6.0-rc.1-126-gfb0bebc",
+			"Rev": "fb0bebc4b64e3881cc52a2478d749845ed76d2a8"
+		},
+		{
+			"ImportPath": "github.com/docker/distribution/context",
+			"Comment": "v2.6.0-rc.1-126-gfb0bebc",
+			"Rev": "fb0bebc4b64e3881cc52a2478d749845ed76d2a8"
+		},
+		{
+			"ImportPath": "github.com/docker/distribution/digestset",
+			"Comment": "v2.6.0-rc.1-126-gfb0bebc",
+			"Rev": "fb0bebc4b64e3881cc52a2478d749845ed76d2a8"
+		},
+		{
+			"ImportPath": "github.com/docker/distribution/manifest",
+			"Comment": "v2.6.0-rc.1-126-gfb0bebc",
+			"Rev": "fb0bebc4b64e3881cc52a2478d749845ed76d2a8"
+		},
+		{
+			"ImportPath": "github.com/docker/distribution/manifest/schema1",
+			"Comment": "v2.6.0-rc.1-126-gfb0bebc",
+			"Rev": "fb0bebc4b64e3881cc52a2478d749845ed76d2a8"
+		},
+		{
+			"ImportPath": "github.com/docker/distribution/manifest/schema2",
+			"Comment": "v2.6.0-rc.1-126-gfb0bebc",
+			"Rev": "fb0bebc4b64e3881cc52a2478d749845ed76d2a8"
+		},
+		{
+			"ImportPath": "github.com/docker/distribution/reference",
+			"Comment": "v2.6.0-rc.1-126-gfb0bebc",
+			"Rev": "fb0bebc4b64e3881cc52a2478d749845ed76d2a8"
+		},
+		{
+			"ImportPath": "github.com/docker/distribution/uuid",
+			"Comment": "v2.6.0-rc.1-126-gfb0bebc",
+			"Rev": "fb0bebc4b64e3881cc52a2478d749845ed76d2a8"
+		},
+		{
+			"ImportPath": "github.com/docker/libtrust",
+			"Rev": "aabc10ec26b754e797f9028f4589c5b7bd90dc20"
+		},
+		{
+			"ImportPath": "github.com/gorilla/context",
+			"Comment": "v1.1-7-g08b5f42",
+			"Rev": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Comment": "v1.3.0",
+			"Rev": "392c28fe23e1c45ddba891b0320b3b5df220beea"
+		},
+		{
+			"ImportPath": "github.com/opencontainers/go-digest",
+			"Comment": "v1.0.0-rc0",
+			"Rev": "aa2ec055abd10d26d539eb630a92241b781ce4bc"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "236b8f043b920452504e263bc21d354427127473"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "7a6e5648d140666db5d920909e082ca00a87ba2c"
+		}
+	]
+}
