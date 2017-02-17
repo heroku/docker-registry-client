@@ -7,10 +7,10 @@ import (
 
 	"github.com/docker/distribution/digest"
 	manifestV1 "github.com/docker/distribution/manifest/schema1"
-	manifestV2 "github.com/docker/distribution/manifest/schema2"
+	manifest "github.com/docker/distribution/manifest/schema2"
 )
 
-func (registry *Registry) Manifest(repository, reference string) (*manifestV1.SignedManifest, error) {
+func (registry *Registry) Manifest(repository, reference string) (*manifest.DeserializedManifest, error) {
 	url := registry.url("/v2/%s/manifests/%s", repository, reference)
 	registry.Logf("registry.manifest.get url=%s repository=%s reference=%s", url, repository, reference)
 
@@ -19,61 +19,35 @@ func (registry *Registry) Manifest(repository, reference string) (*manifestV1.Si
 		return nil, err
 	}
 
-	req.Header.Set("Accept", manifestV1.MediaTypeManifest)
+	req.Header.Set("Accept", manifest.MediaTypeManifest)
 	resp, err := registry.Client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		return nil, err
 	}
-
-	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	signedManifest := &manifestV1.SignedManifest{}
-	err = signedManifest.UnmarshalJSON(body)
-	if err != nil {
-		return nil, err
-	}
-
-	return signedManifest, nil
-}
-
-func (registry *Registry) ManifestV2(repository, reference string) (*manifestV2.DeserializedManifest, error) {
-	url := registry.url("/v2/%s/manifests/%s", repository, reference)
-	registry.Logf("registry.manifest.get url=%s repository=%s reference=%s", url, repository, reference)
-
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Accept", manifestV2.MediaTypeManifest)
-	resp, err := registry.Client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	deserialized := &manifestV2.DeserializedManifest{}
+	deserialized := &manifest.DeserializedManifest{}
 	err = deserialized.UnmarshalJSON(body)
-	if err != nil {
-		return nil, err
-	}
-	return deserialized, nil
+	return deserialized, err
 }
 
 func (registry *Registry) ManifestDigest(repository, reference string) (digest.Digest, error) {
 	url := registry.url("/v2/%s/manifests/%s", repository, reference)
 	registry.Logf("registry.manifest.head url=%s repository=%s reference=%s", url, repository, reference)
 
-	resp, err := registry.Client.Head(url)
+	req, err := http.NewRequest("HEAD", url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Accept", manifest.MediaTypeManifest)
+	resp, err := registry.Client.Do(req)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
@@ -91,14 +65,13 @@ func (registry *Registry) DeleteManifest(repository string, digest digest.Digest
 	if err != nil {
 		return err
 	}
+
+	req.Header.Set("Accept", manifest.MediaTypeManifest)
 	resp, err := registry.Client.Do(req)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (registry *Registry) PutManifest(repository, reference string, signedManifest *manifestV1.SignedManifest) error {

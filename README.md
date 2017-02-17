@@ -47,6 +47,14 @@ tags, err := hub.Tags("heroku/cedar")
 
 The tags will be returned as a slice of `string`s.
 
+## Get Tag Size
+
+```go
+size, err := hub.TagSize("heroku/cedar", "latest")
+```
+
+The tagsize will be returned a `int64` 
+
 ## Downloading Manifests
 
 Each tag has a corresponding manifest, which lists the layers and image
