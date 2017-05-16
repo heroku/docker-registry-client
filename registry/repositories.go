@@ -5,8 +5,8 @@ type repositoriesResponse struct {
 }
 
 func (registry *Registry) Repositories() ([]string, error) {
-	url := registry.url("/v2/_catalog")
-	repos := make([]string, 0, 10)
+	url := registry.url("/v2/_catalog?n=1000")
+	repos := make([]string, 0, 1000)
 	var err error //We create this here, otherwise url will be rescoped with :=
 	var response repositoriesResponse
 	for {
