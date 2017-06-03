@@ -27,7 +27,19 @@ Creating a registry will also ping it to verify that it supports the registry
 API, which may fail. Failures return non-`nil` err values.
 
 Authentication supports both HTTP Basic authentication and OAuth2 token
-negotiation.
+negotiation by default.
+
+HTTP Basic authentication troubles [JFrog Artifactory](https://www.jfrog.com/Artifactory/) so disable it with:
+
+```go
+registry.DisableBasicAuth = "1"
+```
+or
+
+```sh
+go run -ldflags '-X github.com/heroku/docker-registry-client/registry.DisableBasicAuth=1'
+```
+
 
 ## Listing Repositories
 
