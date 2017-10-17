@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 
 	"github.com/docker/distribution/digest"
 	manifestV1 "github.com/docker/distribution/manifest/schema1"
@@ -81,6 +82,34 @@ func (registry *Registry) ManifestDigest(repository, reference string) (digest.D
 		return "", err
 	}
 	return digest.ParseDigest(resp.Header.Get("Docker-Content-Digest"))
+}
+
+func (registry *Registry) HasManifest(repository, reference string) (bool, error) {
+	checkURL := registry.url("/v2/%s/manifests/%s", repository, reference)
+	registry.Logf("registry.manifest.head url=%s repository=%s reference=%s", checkURL, repository, reference)
+
+	resp, err := registry.Client.Head(checkURL)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err == nil {
+		return resp.StatusCode == http.StatusOK, nil
+	}
+
+	urlErr, ok := err.(*url.Error)
+	if !ok {
+		return false, err
+	}
+	httpErr, ok := urlErr.Err.(*HttpStatusError)
+	if !ok {
+		return false, err
+	}
+
+	if httpErr.Response.StatusCode == http.StatusNotFound {
+		return false, nil
+	}
+
+	return false, err
 }
 
 func (registry *Registry) DeleteManifest(repository string, digest digest.Digest) error {
