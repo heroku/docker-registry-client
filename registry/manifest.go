@@ -4,11 +4,52 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	manifestV1 "github.com/docker/distribution/manifest/schema1"
 	manifestV2 "github.com/docker/distribution/manifest/schema2"
 	digest "github.com/opencontainers/go-digest"
 )
+
+func (registry *Registry) ManifestVx(repository, reference string) (interface{}, error) {
+	url := registry.url("/v2/%s/manifests/%s", repository, reference)
+	registry.Logf("registry.manifest.get url=%s repository=%s reference=%s", url, repository, reference)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Accept", strings.Join([]string{manifestV2.MediaTypeManifest, manifestV1.MediaTypeManifest}, ","))
+	resp, err := registry.Client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	contentType := resp.Header.Get("Content-Type")
+	if contentType == manifestV2.MediaTypeManifest {
+		deserialized := &manifestV2.DeserializedManifest{}
+		err = deserialized.UnmarshalJSON(body)
+		if err != nil {
+			return nil, err
+		}
+		return deserialized, nil
+	}
+
+	signedManifest := &manifestV1.SignedManifest{}
+	err = signedManifest.UnmarshalJSON(body)
+	if err != nil {
+		return nil, err
+	}
+
+	return signedManifest, nil
+}
 
 func (registry *Registry) Manifest(repository, reference string) (*manifestV1.SignedManifest, error) {
 	url := registry.url("/v2/%s/manifests/%s", repository, reference)
