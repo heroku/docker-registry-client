@@ -3,8 +3,10 @@ package registry
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"regexp"
+	"strings"
 )
 
 var (
