@@ -59,6 +59,10 @@ func getNextLink(resp *http.Response) (string, error) {
 	for _, link := range resp.Header[http.CanonicalHeaderKey("Link")] {
 		parts := nextLinkRE.FindStringSubmatch(link)
 		if parts != nil {
+			if strings.HasPrefix(parts[1], "/") {
+				url := resp.Request.URL
+				return fmt.Sprintf("%s://%s%s", url.Scheme, url.Host, parts[1]), nil
+			}
 			return parts[1], nil
 		}
 	}
