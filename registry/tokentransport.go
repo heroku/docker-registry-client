@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"io/ioutil"
 	"net/url"
 )
 
@@ -20,6 +21,14 @@ func (t *TokenTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 	if authService := isTokenDemand(resp); authService != nil {
 		resp, err = t.authAndRetry(authService, req)
+		_, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			err = resp.Body.Close()
+		}
+		if err != nil {
+			return nil, fmt.Errorf("http: failed to close token demand response (status=%v, err=%q)", resp.StatusCode, err)
+		}
+
 	}
 	return resp, err
 }
