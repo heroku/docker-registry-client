@@ -1,0 +1,3 @@
+[[override]]
+    name = "github.com/docker/distribution"
+    revision = "7484e51bf6af0d3b1a849644cdaced3cfcf13617"
