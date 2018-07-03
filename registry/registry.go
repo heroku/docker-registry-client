@@ -10,6 +10,8 @@ import (
 
 type LogfCallback func(format string, args ...interface{})
 
+var DisableBasicAuth string
+
 /*
  * Discard log messages silently.
  */
@@ -65,21 +67,23 @@ func NewInsecure(registryUrl, username, password string) (*Registry, error) {
  * error handling this library relies on.
  */
 func WrapTransport(transport http.RoundTripper, url, username, password string) http.RoundTripper {
-	tokenTransport := &TokenTransport{
+	transport = &TokenTransport{
 		Transport: transport,
 		Username:  username,
 		Password:  password,
 	}
-	basicAuthTransport := &BasicTransport{
-		Transport: tokenTransport,
-		URL:       url,
-		Username:  username,
-		Password:  password,
+	if DisableBasicAuth == "" {
+		transport = &BasicTransport{
+			Transport: transport,
+			URL:       url,
+			Username:  username,
+			Password:  password,
+		}
 	}
-	errorTransport := &ErrorTransport{
-		Transport: basicAuthTransport,
+	transport = &ErrorTransport{
+		Transport: transport,
 	}
-	return errorTransport
+	return transport
 }
 
 func newFromTransport(registryUrl, username, password string, transport http.RoundTripper, logf LogfCallback) (*Registry, error) {
