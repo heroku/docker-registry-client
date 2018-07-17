@@ -2,6 +2,7 @@ package registry
 
 import (
 	"io"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -32,13 +33,36 @@ func (registry *Registry) UploadLayer(repository string, digest digest.Digest, c
 
 	registry.Logf("registry.layer.upload url=%s repository=%s digest=%s", uploadUrl, repository, digest)
 
-	upload, err := http.NewRequest("PUT", uploadUrl.String(), content)
+	uploadStep1, err := http.NewRequest("PATCH", uploadUrl.String(), content)
 	if err != nil {
 		return err
 	}
-	upload.Header.Set("Content-Type", "application/octet-stream")
+	uploadStep1.Header.Set("Content-Type", "application/octet-stream")
+	resp1, err := registry.Client.Do(uploadStep1)
+	if resp1 != nil {
+		defer resp1.Body.Close()
+	}
+	// TODO: retry upload more than 0 bytes were successfully transferred
+	// (HEAD upload UUID, adn check the Range header)
+	if err != nil {
+		if resp1 == nil {
+			return fmt.Errorf("error while uploading layer to %s, digest: %s: %s", repository, digest, err)
 
-	_, err = registry.Client.Do(upload)
+		} else {
+			return fmt.Errorf("error while uploading layer to %s: %v %v: digest: %s: %s", repository, resp1.StatusCode, resp1.Status, digest, err)
+		}
+	}
+	if resp1.StatusCode != 202 {
+		return fmt.Errorf("unexpected PATCH response while uploading layer to %s: %v %v: digest: %s", repository, resp1.StatusCode, resp1.Status, digest)
+	}
+
+	uploadStep2, err := http.NewRequest("PUT", uploadUrl.String(), nil)
+	if err != nil {
+		return err
+	}
+	uploadStep2.Header.Set("Content-Type", "application/octet-stream")
+
+	_, err = registry.Client.Do(uploadStep2)
 	return err
 }
 

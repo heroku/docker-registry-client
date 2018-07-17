@@ -8,6 +8,8 @@ import (
 	manifestV1 "github.com/docker/distribution/manifest/schema1"
 	manifestV2 "github.com/docker/distribution/manifest/schema2"
 	digest "github.com/opencontainers/go-digest"
+	"fmt"
+	"io"
 )
 
 func (registry *Registry) Manifest(repository, reference string) (*manifestV1.SignedManifest, error) {
@@ -99,6 +101,30 @@ func (registry *Registry) DeleteManifest(repository string, digest digest.Digest
 		return err
 	}
 	return nil
+}
+
+func (registry *Registry) PushManifest(repository, reference, mediaType string, payload []byte) (string, error) {
+	url := registry.url("/v2/%s/manifests/%s", repository, reference)
+
+	buffer := bytes.NewBuffer(payload)
+	req, err := http.NewRequest("PUT", url, io.LimitReader(buffer, int64(len(payload) + 1)))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set(http.CanonicalHeaderKey("Content-Type"), mediaType)
+	resp, err := registry.Client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusCreated {
+		digest := resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
+		return digest, nil
+	}
+
+	return "", fmt.Errorf("response status code is : %d", resp.StatusCode)
+
 }
 
 func (registry *Registry) PutManifest(repository, reference string, signedManifest *manifestV1.SignedManifest) error {
