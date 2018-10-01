@@ -47,6 +47,15 @@ tags, err := hub.Tags("heroku/cedar")
 
 The tags will be returned as a slice of `string`s.
 
+## Deleting Tags
+
+To delete a tag
+
+```go
+tags, err := hub.Tags("heroku/cedar")
+err = hub.DeleteTags("heroku/cedar", tags[0])
+```
+
 ## Downloading Manifests
 
 Each tag has a corresponding manifest, which lists the layers and image
