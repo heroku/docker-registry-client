@@ -105,7 +105,7 @@ func (registry *Registry) PutManifest(repository, reference string, signedManife
 	url := registry.url("/v2/%s/manifests/%s", repository, reference)
 	registry.Logf("registry.manifest.put url=%s repository=%s reference=%s", url, repository, reference)
 
-	_, payload, err := signedManifest.Payload()
+	mediaType, payload, err := signedManifest.Payload()
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func (registry *Registry) PutManifest(repository, reference string, signedManife
 		return err
 	}
 
-	req.Header.Set("Content-Type", schema1.MediaTypeSignedManifest)
+	req.Header.Set("Content-Type", mediaType)
 	resp, err := registry.Client.Do(req)
 	if resp != nil {
 		defer resp.Body.Close()
