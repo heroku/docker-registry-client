@@ -1,4 +1,4 @@
-GO_FILES := $(shell find . -type f -name '*.go' -not -path "./Godeps/*" -not -path "./vendor/*")
+GO_FILES := $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 GO_PACKAGES := $(shell go list ./... | sed "s/github.com\/heroku\/docker-registry-client/./" | grep -v "^./vendor/")
 
 build:
@@ -18,7 +18,6 @@ hooks:
 	ln -fs ../../bin/git-pre-commit.sh .git/hooks/pre-commit
 
 tidy: goimports
-	./bin/go-version-sync-check.sh
 	test -z "$$(goimports -l -d $(GO_FILES) | tee /dev/stderr)"
 	go vet $(GO_PACKAGES)
 
