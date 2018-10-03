@@ -105,12 +105,12 @@ func (registry *Registry) PutManifest(repository, reference string, signedManife
 	url := registry.url("/v2/%s/manifests/%s", repository, reference)
 	registry.Logf("registry.manifest.put url=%s repository=%s reference=%s", url, repository, reference)
 
-	body, err := signedManifest.MarshalJSON()
+	_, payload, err := signedManifest.Payload()
 	if err != nil {
 		return err
 	}
 
-	buffer := bytes.NewBuffer(body)
+	buffer := bytes.NewBuffer(payload)
 	req, err := http.NewRequest("PUT", url, buffer)
 	if err != nil {
 		return err
