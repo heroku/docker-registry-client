@@ -18,7 +18,6 @@ hooks:
 	ln -fs ../../bin/git-pre-commit.sh .git/hooks/pre-commit
 
 tidy: goimports
-	./bin/go-version-sync-check.sh
 	test -z "$$(goimports -l -d $(GO_FILES) | tee /dev/stderr)"
 	go vet $(GO_PACKAGES)
 
