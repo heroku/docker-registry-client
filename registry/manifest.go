@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	digest "github.com/opencontainers/go-digest"
@@ -101,11 +102,11 @@ func (registry *Registry) DeleteManifest(repository string, digest digest.Digest
 	return nil
 }
 
-func (registry *Registry) PutManifest(repository, reference string, signedManifest *schema1.SignedManifest) error {
+func (registry *Registry) PutManifest(repository, reference string, manifest distribution.Manifest) error {
 	url := registry.url("/v2/%s/manifests/%s", repository, reference)
 	registry.Logf("registry.manifest.put url=%s repository=%s reference=%s", url, repository, reference)
 
-	mediaType, payload, err := signedManifest.Payload()
+	mediaType, payload, err := manifest.Payload()
 	if err != nil {
 		return err
 	}
