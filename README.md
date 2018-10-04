@@ -97,7 +97,7 @@ digest := digest.NewDigestFromHex(
     "sha256",
     "a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4",
 )
-reader, err := hub.DownloadLayer("heroku/cedar", digest)
+reader, err := hub.DownloadBlob("heroku/cedar", digest)
 if reader != nil {
     defer reader.Close()
 }
@@ -115,13 +115,13 @@ digest := digest.NewDigestFromHex(
     "sha256",
     "a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4",
 )
-exists, err := hub.HasLayer("example/repo", digest)
+exists, err := hub.HasBlob("example/repo", digest)
 if err != nil {
     // …
 }
 if !exists {
     stream := …
-    hub.UploadLayer("example/repo", digest, stream)
+    hub.UploadBlob("example/repo", digest, stream)
 }
 ```
 
