@@ -120,7 +120,7 @@ if err != nil {
     // …
 }
 if !exists {
-    stream := …;
+    stream := …
     hub.UploadLayer("example/repo", digest, stream)
 }
 ```
