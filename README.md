@@ -98,7 +98,6 @@ digest := digest.NewDigestFromHex(
     "a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4",
 )
 reader, err := hub.DownloadLayer("heroku/cedar", digest)
-)
 if reader != nil {
     defer reader.Close()
 }
@@ -117,7 +116,6 @@ digest := digest.NewDigestFromHex(
     "a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4",
 )
 exists, err := hub.HasLayer("example/repo", digest)
-)
 if err != nil {
     // …
 }
