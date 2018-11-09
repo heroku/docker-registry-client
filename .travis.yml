@@ -1,5 +1,5 @@
 language: go
-go: 1.7.1
+go: 1.8
 sudo: false
 script: make travis
 notifications:

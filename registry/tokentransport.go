@@ -13,6 +13,22 @@ type TokenTransport struct {
 	Password  string
 }
 
+// CannotReplayRequestBody describes the HTTP error, when the server responded with a WWW-Authenticate header,
+// but the body of the request (POST, PUT, PATCH) couldn't be replayed
+type CannotReplayRequestBody struct {
+	Err error
+}
+
+func (e CannotReplayRequestBody) Error() string {
+	msg := "HTTP server responded with a WWW-Authenticate header, but the body of the request cannot be replayed"
+	if e.Err != nil {
+		msg += ": " + e.Err.Error()
+	}
+	return msg
+}
+
+var _ error = CannotReplayRequestBody{}
+
 func (t *TokenTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	resp, err := t.Transport.RoundTrip(req)
 	if err != nil {
@@ -70,6 +86,17 @@ func (t *TokenTransport) auth(authService *authService) (string, *http.Response,
 
 func (t *TokenTransport) retry(req *http.Request, token string) (*http.Response, error) {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	if req.Body != nil {
+		// reinitialize Body reader if necessary
+		if req.GetBody == nil {
+			return nil, &CannotReplayRequestBody{fmt.Errorf("missing GetBody parameter")}
+		}
+		var err error
+		req.Body, err = req.GetBody()
+		if err != nil {
+			return nil, &CannotReplayRequestBody{Err: err}
+		}
+	}
 	resp, err := t.Transport.RoundTrip(req)
 	return resp, err
 }

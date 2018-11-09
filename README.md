@@ -8,7 +8,7 @@ API](http://docs.docker.com/registry/spec/api/), for Go applications.
 ```go
 import (
     "github.com/heroku/docker-registry-client/registry"
-    "github.com/docker/distribution/digest"
+    digest "github.com/opencontainers/go-digest"
     "github.com/docker/distribution/manifest"
     "github.com/docker/libtrust"
 )
@@ -120,8 +120,8 @@ if err != nil {
     // …
 }
 if !exists {
-    stream := …
-    hub.UploadBlob("example/repo", digest, stream)
+    stream := bytes.NewBuffer(...)
+    hub.UploadBlob("example/repo", digest, stream, nil)
 }
 ```
 

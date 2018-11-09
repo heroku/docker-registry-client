@@ -21,7 +21,15 @@ func (registry *Registry) DownloadBlob(repository string, digest digest.Digest) 
 	return resp.Body, nil
 }
 
-func (registry *Registry) UploadBlob(repository string, digest digest.Digest, content io.Reader) error {
+// UploadBlob can be used to upload an FS layer or an image config file into the given repository.
+// It uploads the bytes read from content. Digest must match with the hash of those bytes.
+// In case of token authentication the HTTP request must be retried after a 401 Unauthorized response
+// (see https://docs.docker.com/registry/spec/auth/token/). In this case the getBody function is called
+// in order to retrieve a fresh instance of the content reader. This behaviour matches exactly of the
+// GetBody parameter of http.Client. This also means that if content is of type *bytes.Buffer,
+// *bytes.Reader or *strings.Reader, then GetBody is populated automatically (as explained in the
+// documentation of http.NewRequest()), so nil can be passed as the getBody parameter.
+func (registry *Registry) UploadBlob(repository string, digest digest.Digest, content io.Reader, getBody func() (io.ReadCloser, error)) error {
 	uploadUrl, err := registry.initiateUpload(repository)
 	if err != nil {
 		return err
@@ -37,9 +45,16 @@ func (registry *Registry) UploadBlob(repository string, digest digest.Digest, co
 		return err
 	}
 	upload.Header.Set("Content-Type", "application/octet-stream")
+	if getBody != nil {
+		upload.GetBody = getBody
+	}
 
-	_, err = registry.Client.Do(upload)
-	return err
+	resp, err := registry.Client.Do(upload)
+	if err != nil {
+		return err
+	}
+	_ = resp.Body.Close()
+	return nil
 }
 
 func (registry *Registry) HasBlob(repository string, digest digest.Digest) (bool, error) {
