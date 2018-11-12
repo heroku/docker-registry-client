@@ -1,0 +1,22 @@
+[
+  {
+    "url": "https://registry-1.docker.io",
+    "repository": "library/alpine",
+    "reference": "3.8",
+    "expected": {
+      "manifest_v2_digest": "sha256:02892826401a9d18f0ea01f8a2f35d328ef039db4e1edcc45c630314a0457d5b",
+      "blobs": [
+        {
+          "mediaType": "application/vnd.docker.container.image.v1+json",
+          "size": 1512,
+          "digest": "sha256:196d12cf6ab19273823e700516e98eb1910b03b17840f9d5509f03858484d321"
+        },
+        {
+          "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+          "size": 2206931,
+          "digest": "sha256:4fe2ade4980c2dda4fc95858ebb981489baec8c1e4bd282ab1c3560be8ff9bde"
+        }
+      ]
+    }
+  }
+]
