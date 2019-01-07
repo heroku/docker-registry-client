@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"io/ioutil"
 	"net/url"
 )
 
@@ -16,15 +15,13 @@ type TokenTransport struct {
 
 func (t *TokenTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	resp, err := t.Transport.RoundTrip(req)
-	if err != nil {
-		return resp, err
-	}
+	// when auth is bad, code 401, it's not an error
+	// we have to remove this check to ensure we will retry with a Token
+	// if err != nil {
+	// 	return resp, err
+	// }
 	if authService := isTokenDemand(resp); authService != nil {
 		resp, err = t.authAndRetry(authService, req)
-		_, err := ioutil.ReadAll(resp.Body)
-		if err == nil {
-			err = resp.Body.Close()
-		}
 		if err != nil {
 			return nil, fmt.Errorf("http: failed to close token demand response (status=%v, err=%q)", resp.StatusCode, err)
 		}
