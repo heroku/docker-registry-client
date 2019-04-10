@@ -89,7 +89,7 @@ func (registry *Registry) ManifestDigestV2(repository, reference string) (digest
 	registry.Logf("registry.manifest.head url=%s repository=%s reference=%s", url, repository, reference)
 	req, err := http.NewRequest("HEAD", url, nil)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	req.Header.Set("Accept", schema2.MediaTypeManifest)
 	resp, err := registry.Client.Do(req)
