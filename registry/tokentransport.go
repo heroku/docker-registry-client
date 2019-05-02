@@ -3,6 +3,8 @@ package registry
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 )
@@ -13,12 +15,18 @@ type TokenTransport struct {
 	Password  string
 }
 
+func discardResponse(resp *http.Response) {
+	_, _ = io.Copy(ioutil.Discard, resp.Body)
+	resp.Body.Close()
+}
+
 func (t *TokenTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	resp, err := t.Transport.RoundTrip(req)
 	if err != nil {
 		return resp, err
 	}
 	if authService := isTokenDemand(resp); authService != nil {
+		discardResponse(resp)
 		resp, err = t.authAndRetry(authService, req)
 	}
 	return resp, err
