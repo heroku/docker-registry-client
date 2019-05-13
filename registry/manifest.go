@@ -70,17 +70,11 @@ func (registry *Registry) ManifestV2(repository, reference string) (*schema2.Des
 	return deserialized, nil
 }
 
-func (registry *Registry) ManifestDigestV2(repository, reference string) (digest.Digest, error) {
+func (registry *Registry) ManifestDigest(repository, reference string) (digest.Digest, error) {
 	url := registry.url("/v2/%s/manifests/%s", repository, reference)
 	registry.Logf("registry.manifest.head url=%s repository=%s reference=%s", url, repository, reference)
 
-	req, err := http.NewRequest("HEAD", url, nil)
-	if err != nil {
-		return "", err
-	}
-
-	req.Header.Set("Accept", manifestV2.MediaTypeManifest)
-	resp, err := registry.Client.Do(req)
+	resp, err := registry.Client.Head(url)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
@@ -90,11 +84,17 @@ func (registry *Registry) ManifestDigestV2(repository, reference string) (digest
 	return digest.Parse(resp.Header.Get("Docker-Content-Digest"))
 }
 
-func (registry *Registry) ManifestDigest(repository, reference string) (digest.Digest, error) {
+func (registry *Registry) ManifestDigestV2(repository, reference string) (digest.Digest, error) {
 	url := registry.url("/v2/%s/manifests/%s", repository, reference)
 	registry.Logf("registry.manifest.head url=%s repository=%s reference=%s", url, repository, reference)
 
-	resp, err := registry.Client.Head(url)
+	req, err := http.NewRequest("HEAD", url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Accept", schema2.MediaTypeManifest)
+	resp, err := registry.Client.Do(req)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
