@@ -8,7 +8,9 @@ import (
 
 type HttpStatusError struct {
 	Response *http.Response
-	Body     []byte // Copied from `Response.Body` to avoid problems with unclosed bodies later. Nobody calls `err.Response.Body.Close()`, ever.
+	// Copied from `Response.Body` to avoid problems with unclosed bodies later.
+	// Nobody calls `err.Response.Body.Close()`, ever.
+	Body []byte
 }
 
 func (err *HttpStatusError) Error() string {
