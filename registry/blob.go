@@ -70,10 +70,10 @@ func (registry *Registry) HasBlob(repository string, digest digest.Digest) (bool
 }
 
 func (registry *Registry) BlobMetadata(repository string, digest digest.Digest) (distribution.Descriptor, error) {
-	checkUrl := registry.url("/v2/%s/blobs/%s", repository, digest)
-	registry.Logf("registry.blob.check url=%s repository=%s digest=%s", checkUrl, repository, digest)
+	checkURL := registry.url("/v2/%s/blobs/%s", repository, digest)
+	registry.Logf("registry.blob.check url=%s repository=%s digest=%s", checkURL, repository, digest)
 
-	resp, err := registry.Client.Head(checkUrl)
+	resp, err := registry.Client.Head(checkURL)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
