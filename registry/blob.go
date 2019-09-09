@@ -42,6 +42,24 @@ func (registry *Registry) UploadBlob(repository string, digest digest.Digest, co
 	return err
 }
 
+func (registry *Registry) MountBlob(repository string, digest digest.Digest, fromRepository string) error {
+	url := registry.url("/v2/%s/blobs/uploads/?mount=%s&from=%s", repository, digest, fromRepository)
+	registry.Logf("registry.blob.mount url=%s repository=%s mount=%s from=%s", url, repository, digest, fromRepository)
+
+	req, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := registry.Client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (registry *Registry) HasBlob(repository string, digest digest.Digest) (bool, error) {
 	checkURL := registry.url("/v2/%s/blobs/%s", repository, digest)
 	registry.Logf("registry.blob.check url=%s repository=%s digest=%s", checkURL, repository, digest)
