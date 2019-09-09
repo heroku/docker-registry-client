@@ -51,7 +51,7 @@ func New(registryUrl, username, password string) (*Registry, error) {
 func NewInsecure(registryUrl, username, password string) (*Registry, error) {
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
+			InsecureSkipVerify: true, //nolint:gosec TODO: Why?
 		},
 	}
 
