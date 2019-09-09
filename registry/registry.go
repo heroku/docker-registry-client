@@ -113,8 +113,5 @@ func (r *Registry) Ping() error {
 	if resp != nil {
 		defer resp.Body.Close()
 	}
-	if err != nil {
-
-	}
 	return err
 }
