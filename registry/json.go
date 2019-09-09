@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ErrNoMorePages = errors.New("No more pages")
+	ErrNoMorePages = errors.New("no more pages")
 )
 
 func (registry *Registry) getJSON(url string, response interface{}) error {
