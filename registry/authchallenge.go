@@ -22,6 +22,7 @@ const (
 	isSpace
 )
 
+//nolint:gochecknoinits
 func init() {
 	// OCTET      = <any 8-bit sequence of data>
 	// CHAR       = <any US-ASCII character (octets 0 - 127)>
