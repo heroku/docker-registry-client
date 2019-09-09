@@ -38,24 +38,25 @@ type Registry struct {
  * This passes http.DefaultTransport to WrapTransport when creating the
  * http.Client.
  */
-func New(registryUrl, username, password string) (*Registry, error) {
+func New(registryURL, username, password string) (*Registry, error) {
 	transport := http.DefaultTransport
 
-	return newFromTransport(registryUrl, username, password, transport, Log)
+	return newFromTransport(registryURL, username, password, transport, Log)
 }
 
 /*
  * Create a new Registry, as with New, using an http.Transport that disables
  * SSL certificate verification.
  */
-func NewInsecure(registryUrl, username, password string) (*Registry, error) {
+func NewInsecure(registryURL, username, password string) (*Registry, error) {
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
+			// TODO: Why?
+			InsecureSkipVerify: true, //nolint:gosec
 		},
 	}
 
-	return newFromTransport(registryUrl, username, password, transport, Log)
+	return newFromTransport(registryURL, username, password, transport, Log)
 }
 
 /*
@@ -82,8 +83,8 @@ func WrapTransport(transport http.RoundTripper, url, username, password string) 
 	return errorTransport
 }
 
-func newFromTransport(registryUrl, username, password string, transport http.RoundTripper, logf LogfCallback) (*Registry, error) {
-	url := strings.TrimSuffix(registryUrl, "/")
+func newFromTransport(registryURL, username, password string, transport http.RoundTripper, logf LogfCallback) (*Registry, error) {
+	url := strings.TrimSuffix(registryURL, "/")
 	transport = WrapTransport(transport, url, username, password)
 	registry := &Registry{
 		URL: url,
@@ -112,9 +113,6 @@ func (r *Registry) Ping() error {
 	resp, err := r.Client.Get(url)
 	if resp != nil {
 		defer resp.Body.Close()
-	}
-	if err != nil {
-
 	}
 	return err
 }

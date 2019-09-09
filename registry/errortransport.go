@@ -6,16 +6,18 @@ import (
 	"net/http"
 )
 
-type HttpStatusError struct {
+type HTTPStatusError struct {
 	Response *http.Response
-	Body     []byte // Copied from `Response.Body` to avoid problems with unclosed bodies later. Nobody calls `err.Response.Body.Close()`, ever.
+	// Copied from `Response.Body` to avoid problems with unclosed bodies later.
+	// Nobody calls `err.Response.Body.Close()`, ever.
+	Body []byte
 }
 
-func (err *HttpStatusError) Error() string {
+func (err *HTTPStatusError) Error() string {
 	return fmt.Sprintf("http: non-successful response (status=%v body=%q)", err.Response.StatusCode, err.Body)
 }
 
-var _ error = &HttpStatusError{}
+var _ error = &HTTPStatusError{}
 
 type ErrorTransport struct {
 	Transport http.RoundTripper
@@ -34,7 +36,7 @@ func (t *ErrorTransport) RoundTrip(request *http.Request) (*http.Response, error
 			return nil, fmt.Errorf("http: failed to read response body (status=%v, err=%q)", resp.StatusCode, err)
 		}
 
-		return nil, &HttpStatusError{
+		return nil, &HTTPStatusError{
 			Response: resp,
 			Body:     body,
 		}

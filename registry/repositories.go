@@ -11,7 +11,7 @@ func (registry *Registry) Repositories() ([]string, error) {
 	var response repositoriesResponse
 	for {
 		registry.Logf("registry.repositories url=%s", url)
-		url, err = registry.getPaginatedJson(url, &response)
+		url, err = registry.getPaginatedJSON(url, &response)
 		switch err {
 		case ErrNoMorePages:
 			repos = append(repos, response.Repositories...)

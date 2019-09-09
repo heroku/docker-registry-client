@@ -1,6 +1,14 @@
 language: go
-go: 1.7.1
+go:
+  - 1.13.x
+  - 1.12.x
+  - 1.11.x
 sudo: false
-script: make travis
+env:
+  global:
+    - GO111MODULE=on
+    - GOTEST_OPT="-v -race"
+    - LINT_RUN_OPTS=""
+script: make test
 notifications:
   email: false

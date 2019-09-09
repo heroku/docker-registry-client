@@ -1,0 +1,69 @@
+# See https://github.com/golangci/golangci-lint#config-file
+run:
+  deadline: 1m #Default
+  issues-exit-code: 1 #Default
+  tests: true #Default
+
+linters:
+  enable:
+    - misspell
+    - goimports
+    - golint
+    - stylecheck
+    - unconvert
+    - dupl
+    - gosec
+    - scopelint
+    - nakedret
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - gocyclo
+    - lll
+    - maligned
+    - prealloc
+    - unparam
+    - errcheck
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - goconst # Don't run on test files because they may often repeate the same string
+        - scopelint # Otherwise you need tc := tc. This isn't actually a problem unless tests are being run in parallel.
+        - lll # Don't do line length checks in test code.
+        - dupl # Sometimes we duplicate a bunch in tests for the sake of clarity.
+    - path: nacl/secretbox
+      linters:
+        - gosec # Don't run gosec on nacl/secretbox* because we know it uses crypto/md5. TODO: Evaluate if this makes sense.
+    - path: hmetrics/onload/init.go
+      linters:
+        - gochecknoinits # The whole point of this package is to use init
+    - path: cmd/s3env/main.go
+      linters:
+        - gochecknoinits # TODO: FixMe
+    - path: go-kit/metrics/provider/librato/librato_test.go
+      linters:
+        - gocyclo # TODO: Refactor TestLibratoHistogramJSONMarshalers
+    - path: grpc/
+      linters:
+        - lll # GRPC code has notoriously long function signatures.
+    - path: go-kit/metrics/provider/librato/librato.go
+      linters:
+        - maligned # TODO: evaluate if this makes sense
+
+linters-settings:
+  misspell:
+    locale: US
+    #ignore-words:
+    #  - someword
+  goimports:
+    local-prefixes: github.com/heroku/x
+  gocyclo:
+    # minimal code complexity to report, 30 by default (but we recommend 10-20)
+    min-complexity: 14
+  lll:
+    # max line length, lines longer will be reported. Default is 120.
+    line-length: 130
+  maligned:
+    suggest-new: true

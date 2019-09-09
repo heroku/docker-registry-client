@@ -1,27 +1,41 @@
-GO_FILES := $(shell find . -type f -name '*.go' -not -path "./vendor/*")
-GO_PACKAGES := $(shell go list ./... | sed "s/github.com\/heroku\/docker-registry-client/./" | grep -v "^./vendor/")
+PKG_SPEC = ./registry/...
+MOD = -mod=readonly
+GOTEST = go test $(MOD)
+GOTEST_COVERAGE_OPT = -coverprofile=coverage.txt -covermode=atomic
+TOOLS_DIR = $(shell git rev-parse --show-toplevel)/.tools
+GOBUILD = go build $(MOD)
 
-build:
-	go build -v $(GO_PACKAGES)
+ENV ?= development
+LINT_RUN_OPTS ?= --fix
+override GOTEST_OPT += -timeout 30s
 
-travis: tidy test
+.DEFAULT_GOAL := precommit
 
-test: build
-	go fmt $(GO_PACKAGES)
-	go test -race -i $(GO_PACKAGES)
-	go test -race -v $(GO_PACKAGES)
+$(TOOLS_DIR)/golangci-lint: go.mod go.sum tools.go
+	$(GOBUILD) -o $(TOOLS_DIR)/golangci-lint github.com/golangci/golangci-lint/cmd/golangci-lint
 
-# Setup & Code Cleanliness
-setup: hooks tidy
+.PHONY: vars
+vars:
+	@echo "PKG_SPEC=$(PKG_SPEC)"
+	@echo "MOD=$(MOD)"
+	@echo "GOTEST=$(GOTEST)"
+	@echo "COVERAGE_OPT=$(COVERAGE_OPT)"
+	@echo "TOOLS_DIR=$(TOOLS_DIR)"
+	@echo "GOBUILD=$(GOBUILD)"
+	@echo "ENV=$(ENV)"
 
-hooks:
-	ln -fs ../../bin/git-pre-commit.sh .git/hooks/pre-commit
+.PHONY: precommit
+precommit: lint test coverage 
 
-tidy: goimports
-	test -z "$$(goimports -l -d $(GO_FILES) | tee /dev/stderr)"
-	go vet $(GO_PACKAGES)
+.PHONY: lint
+lint: $(TOOLS_DIR)/golangci-lint
+	$(TOOLS_DIR)/golangci-lint run $(LINT_RUN_OPTS)
 
-precommit: tidy test
+.PHONY: coverage
+coverage:
+	$(GOTEST) $(GOTEST_OPT) $(GOTEST_COVERAGE_OPT) $(PKG_SPEC)
+	go tool cover -html=coverage.txt -o coverage.html
 
-goimports:
-	go get golang.org/x/tools/cmd/goimports
+.PHONY: test
+test:
+	$(GOTEST) $(GOTEST_OPT) $(PKG_SPEC)
