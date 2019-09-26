@@ -102,6 +102,8 @@ func (registry *Registry) DeleteManifest(repository string, digest digest.Digest
 	return nil
 }
 
+// PutManifest uploads manifest to the given repository/reference.
+// Manifest is typically either of type schema2.DeserializedManifest or schema1.SignedManifest
 func (registry *Registry) PutManifest(repository, reference string, manifest distribution.Manifest) error {
 	url := registry.url("/v2/%s/manifests/%s", repository, reference)
 	registry.Logf("registry.manifest.put url=%s repository=%s reference=%s", url, repository, reference)
@@ -123,4 +125,20 @@ func (registry *Registry) PutManifest(repository, reference string, manifest dis
 		defer resp.Body.Close()
 	}
 	return err
+}
+
+// PutManifestV2 uploads the given schama2.Manifest to the given repository/reference and returns with its digest.
+// If you want to upload a schema2.DeserializedManifest, please use the generic PutManifest().
+func (registry *Registry) PutManifestV2(repository, reference string, manifest *schema2.Manifest) (digest.Digest, error) {
+	deserializedManifest, err := schema2.FromStruct(*manifest)
+	if err != nil {
+		return "", err
+	}
+	_, canonical, err := deserializedManifest.Payload()
+	if err != nil {
+		return "", err
+	}
+	digest := digest.FromBytes(canonical)
+	err = registry.PutManifest(repository, reference, deserializedManifest)
+	return digest, err
 }
