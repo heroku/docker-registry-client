@@ -84,6 +84,19 @@ digest, err := hub.ManifestDigest("heroku/cedar", "14")
 
 The returned digest will be a `digest.Digest`. See `github.com/docker/distribution/digest`.
 
+## Retrieving "Image" Digest
+
+An Image is identified by a digest.
+You can't search an image Digest if it have no tags, so use this instead :
+
+```go
+digests, err := hub.Images("heroku/cedar")
+```
+
+The returned variable is a hash of string (`[]string`) representing all the digests.
+
+To convert them to digest `digest.Digest`, use `imageDigest, err := digest.Parse(imageDigestStr)`. See `github.com/docker/distribution/digest`.
+
 ## Deleting Manifest
 
 To delete a manifest
