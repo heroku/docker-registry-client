@@ -102,6 +102,29 @@ func (registry *Registry) DeleteManifest(repository string, digest digest.Digest
 	return nil
 }
 
+// ManifestV2Digest returns the 'Docker-Content-Digest' field of the header when making a
+// request to the v2 manifest.
+func (registry *Registry) ManifestV2Digest(repository, reference string) (digest.Digest, error) {
+	url := registry.url("/v2/%s/manifests/%s", repository, reference)
+	registry.Logf("registry.manifest.head url=%s repository=%s reference=%s", url, repository, reference)
+
+	req, err := http.NewRequest("HEAD", url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Accept", "application/vnd.docker.distribution.manifest.v2+json")
+	resp, err := registry.Client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return "", err
+	}
+
+	return digest.Parse(resp.Header.Get("Docker-Content-Digest"))
+}
+
 func (registry *Registry) PutManifest(repository, reference string, manifest distribution.Manifest) error {
 	url := registry.url("/v2/%s/manifests/%s", repository, reference)
 	registry.Logf("registry.manifest.put url=%s repository=%s reference=%s", url, repository, reference)
