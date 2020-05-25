@@ -71,14 +71,14 @@ func WrapTransport(transport http.RoundTripper, url, username, password string) 
 		Username:  username,
 		Password:  password,
 	}
-	//basicAuthTransport := &BasicTransport{
-	//	Transport: tokenTransport,
-	//	URL:       url,
-	//	Username:  username,
-	//	Password:  password,
-	//}
-	errorTransport := &ErrorTransport{
+	basicAuthTransport := &BasicTransport{
 		Transport: tokenTransport,
+		URL:       url,
+		Username:  username,
+		Password:  password,
+	}
+	errorTransport := &ErrorTransport{
+		Transport: basicAuthTransport,
 	}
 	return errorTransport
 }
