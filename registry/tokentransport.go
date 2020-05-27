@@ -1,8 +1,10 @@
 package registry
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -54,8 +56,12 @@ func (t *TokenTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if authService := isTokenDemand(resp); authService != nil {
 		resp.Body.Close()
 		if req.Body != nil {
-			ioutil.ReadAll(req.Body)
+			tmp, _ := ioutil.ReadAll(req.Body)
+			var reader io.Reader
+			reader = bytes.NewReader(tmp)
+			req.Body, _ = reader.(io.ReadCloser)
 		}
+
 		resp, err = t.authAndRetry(authService, req)
 	}
 	return resp, err
