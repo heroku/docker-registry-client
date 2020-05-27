@@ -29,11 +29,14 @@ func NewTokenTransport(transport http.RoundTripper, username string, password st
 var scopeReg = regexp.MustCompile(`^/v2/([A-Za-z0-9/-]+)/\b(tags|manifests|blobs)\b`)
 
 func (t *TokenTransport) GetScope(u string) string {
+	prefix := "/v2/"
 	sc := scopeReg.Find([]byte(u))
 	if sc == nil {
 		return ""
 	} else {
-		return string(sc)
+		begin := strings.Index(string(sc), prefix) + len(prefix)
+		end := strings.LastIndex(string(sc), "/")
+		return string(sc[begin:end])
 	}
 }
 

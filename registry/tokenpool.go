@@ -32,7 +32,7 @@ func (t *TokenPool) SetToken(scope, token string) {
 	// repository:gds-eip/eip-api:pull
 	if l := strings.Split(scope, ":"); len(l) == 3 {
 		t.rwm.Lock()
-		t.tokens[l[2]] = token
+		t.tokens[l[1]] = token
 		t.rwm.Unlock()
 	}
 
