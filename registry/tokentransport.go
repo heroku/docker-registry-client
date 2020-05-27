@@ -127,12 +127,7 @@ func (authService *authService) Request(username, password string) (*http.Reques
 	q := url.Query()
 	q.Set("service", authService.Service)
 	if authService.Scope != "" {
-		sl := strings.Split(authService.Scope, ":")
-		if len(sl) >= 3 {
-			q.Set("scope", fmt.Sprintf("%s:%s:pull,push", sl[1], sl[2]))
-		} else {
-			q.Set("scope", authService.Scope)
-		}
+		q.Set("scope", authService.Scope)
 	}
 	url.RawQuery = q.Encode()
 
