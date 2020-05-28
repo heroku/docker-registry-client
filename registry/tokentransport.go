@@ -1,8 +1,11 @@
 package registry
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -46,15 +49,21 @@ func (t *TokenTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	}
 
+	var tmp []byte
+	if req.Body != nil {
+		tmp, _ = ioutil.ReadAll(req.Body)
+		req.Body = t.GenerRequestBody(tmp)
+	}
+
 	resp, err := t.Transport.RoundTrip(req)
 	if err != nil {
 		return resp, err
 	}
 	if authService := isTokenDemand(resp); authService != nil {
 		resp.Body.Close()
-		//if req.Body != nil {
-		//	ioutil.ReadAll(req.Body)
-		//}
+		if req.Body != nil {
+			req.Body = t.GenerRequestBody(tmp)
+		}
 		resp, err = t.authAndRetry(authService, req)
 	}
 	return resp, err
@@ -62,6 +71,15 @@ func (t *TokenTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 type authToken struct {
 	Token string `json:"token"`
+}
+
+func (t *TokenTransport) GenerRequestBody(tmp []byte) io.ReadCloser {
+	reader := io.Reader(bytes.NewReader(tmp))
+	rc, ok := reader.(io.ReadCloser)
+	if !ok && reader != nil {
+		rc = ioutil.NopCloser(reader)
+	}
+	return rc
 }
 
 func (t *TokenTransport) authAndRetry(authService *authService, req *http.Request) (*http.Response, error) {
