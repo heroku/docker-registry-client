@@ -21,10 +21,10 @@ func (registry *Registry) DownloadBlob(repository string, digest digest.Digest) 
 	return resp.Body, nil
 }
 
-func (registry *Registry) UploadBlob(repository string, digest digest.Digest, content io.Reader) error {
+func (registry *Registry) UploadBlob(repository string, digest digest.Digest, content io.Reader) (*http.Response, error) {
 	uploadURL, err := registry.initiateUpload(repository)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	q := uploadURL.Query()
 	q.Set("digest", digest.String())
@@ -34,12 +34,12 @@ func (registry *Registry) UploadBlob(repository string, digest digest.Digest, co
 
 	upload, err := http.NewRequest("PUT", uploadURL.String(), content)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	upload.Header.Set("Content-Type", "application/octet-stream")
 
-	_, err = registry.Client.Do(upload)
-	return err
+	resp, err := registry.Client.Do(upload)
+	return resp, err
 }
 
 func (registry *Registry) HasBlob(repository string, digest digest.Digest) (bool, error) {

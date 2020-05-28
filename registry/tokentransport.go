@@ -1,25 +1,69 @@
 package registry
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
+	"strings"
 )
 
 type TokenTransport struct {
 	Transport http.RoundTripper
 	Username  string
 	Password  string
+	tokens    *TokenPool
+}
+
+func NewTokenTransport(transport http.RoundTripper, username string, password string) *TokenTransport {
+	return &TokenTransport{
+		Transport: transport,
+		Username:  username,
+		Password:  password,
+		tokens:    NewTokenPool(),
+	}
+}
+
+var scopeReg = regexp.MustCompile(`^/v2/([A-Za-z0-9/-]+)/\b(tags|manifests|blobs)\b`)
+
+func (t *TokenTransport) GetScope(u string) string {
+	prefix := "/v2/"
+	sc := scopeReg.Find([]byte(u))
+	if sc == nil {
+		return ""
+	} else {
+		begin := strings.Index(string(sc), prefix) + len(prefix)
+		end := strings.LastIndex(string(sc), "/")
+		return string(sc[begin:end])
+	}
 }
 
 func (t *TokenTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	sc := t.GetScope(req.URL.EscapedPath())
+	token := t.tokens.GetToken(sc)
+	if len(token) > 0 {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	}
+
+	var tmp []byte
+	if req.Body != nil {
+		tmp, _ = ioutil.ReadAll(req.Body)
+		req.Body = t.GenerRequestBody(tmp)
+	}
+
 	resp, err := t.Transport.RoundTrip(req)
 	if err != nil {
 		return resp, err
 	}
 	if authService := isTokenDemand(resp); authService != nil {
 		resp.Body.Close()
+		if req.Body != nil {
+			req.Body = t.GenerRequestBody(tmp)
+		}
 		resp, err = t.authAndRetry(authService, req)
 	}
 	return resp, err
@@ -29,12 +73,22 @@ type authToken struct {
 	Token string `json:"token"`
 }
 
+func (t *TokenTransport) GenerRequestBody(tmp []byte) io.ReadCloser {
+	reader := io.Reader(bytes.NewReader(tmp))
+	rc, ok := reader.(io.ReadCloser)
+	if !ok && reader != nil {
+		rc = ioutil.NopCloser(reader)
+	}
+	return rc
+}
+
 func (t *TokenTransport) authAndRetry(authService *authService, req *http.Request) (*http.Response, error) {
 	token, authResp, err := t.auth(authService)
 	if err != nil {
 		return authResp, err
 	}
 
+	t.tokens.SetToken(authService.Scope, token)
 	retryResp, err := t.retry(req, token)
 	return retryResp, err
 }
