@@ -11,6 +11,8 @@ func (registry *Registry) Tags(repository string) (tags []string, err error) {
 	for {
 		registry.Logf("registry.tags url=%s repository=%s", url, repository)
 		url, err = registry.getPaginatedJSON(url, &response)
+		url = strings.ReplaceAll(url, "%", "%%")
+		url = registry.url(url)
 		switch err {
 		case ErrNoMorePages:
 			tags = append(tags, response.Tags...)
