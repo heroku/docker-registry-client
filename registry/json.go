@@ -3,8 +3,10 @@ package registry
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"regexp"
+	"strings"
 )
 
 var (
@@ -33,7 +35,8 @@ func (registry *Registry) getPaginatedJSON(url string, response interface{}) (st
 // Link header. For example,
 //
 //    <http://registry.example.com/v2/_catalog?n=5&last=tag5>; type="application/json"; rel="next"
-//
+//    2.7 will be
+//    </v2/_catalog?n=5&last=tag5>; type="application/json"; rel="next"
 // The URL is _supposed_ to be wrapped by angle brackets `< ... >`,
 // but e.g., quay.io does not include them. Similarly, params like
 // `rel="next"` may not have quoted values in the wild.
@@ -43,6 +46,10 @@ func getNextLink(resp *http.Response) (string, error) {
 	for _, link := range resp.Header[http.CanonicalHeaderKey("Link")] {
 		parts := nextLinkRE.FindStringSubmatch(link)
 		if parts != nil {
+			// support 2.7+ distribution
+			if strings.HasPrefix(parts[1], "/") {
+				return fmt.Sprintf("%s://%s%s", resp.Request.URL.Scheme, resp.Request.URL.Host, parts[1]), nil
+			}
 			return parts[1], nil
 		}
 	}
