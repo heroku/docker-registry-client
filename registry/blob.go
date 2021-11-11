@@ -1,12 +1,15 @@
 package registry
 
 import (
+	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 
 	"github.com/docker/distribution"
 	digest "github.com/opencontainers/go-digest"
+	"github.com/sirupsen/logrus"
 )
 
 func (registry *Registry) DownloadBlob(repository string, digest digest.Digest) (io.ReadCloser, error) {
@@ -53,8 +56,72 @@ func (registry *Registry) UploadBlob(repository string, digest digest.Digest, co
 	if err != nil {
 		return err
 	}
-	_ = resp.Body.Close()
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		registry.Logf("registry.blob.upload read body failed url=%s repository=%s error=%s", uploadUrl, repository, err.Error())
+		return err
+	}
+	registry.Logf("registry.blob.upload read body failed url=%s repository=%s body=%s", uploadUrl, repository, body)
 	return nil
+}
+
+func (registry *Registry) MonolithicUploadBlob(repository string, digest digest.Digest, content io.Reader, contentLength int, getBody func() (io.ReadCloser, error)) (err error) {
+	initiateUrl := registry.url("/v2/%s/blobs/uploads/?digest=%s", repository, digest.String())
+
+	registry.Logf("registry.blob.Monolithic-upload url=%s repository=%s", initiateUrl, repository)
+
+	// 1. init
+	init, err := http.NewRequest("POST", initiateUrl, nil)
+	if err != nil {
+		registry.Logf("registry.blob.Monolithic-upload init NewRequest failed url=%s repository=%s error=%s", initiateUrl, repository, err.Error())
+
+		return err
+	}
+	init.Header.Set("Content-Type", "application/octet-stream")
+	init.Header.Set("Content-Length", fmt.Sprint(contentLength))
+	initResp, err := registry.Client.Do(init)
+	if err != nil {
+		registry.Logf("registry.blob.Monolithic-upload init Do request failed url=%s repository=%s error=%s", initiateUrl, repository, err.Error())
+
+		return err
+	}
+	logrus.WithField("status", initResp.StatusCode).
+		WithField("Docker-Upload-UUID", initResp.Header.Get("Docker-Upload-UUID")).
+		WithField("Location", initResp.Header.Get("Location")).
+		Infof("Monolithic upload initResp")
+
+	// 2. upload
+	// uploadURL := registry.url("/v2/%s/blobs/uploads/%s?digest=%s", repository, initResp.Header.Get("Docker-Upload-UUID"), digest.String())
+	uploadURL := fmt.Sprintf("%s&digest=%s", initResp.Header.Get("Location"), digest.String())
+	upload, err := http.NewRequest("PUT", uploadURL, content)
+	if getBody != nil {
+		upload.GetBody = getBody
+	}
+	init.Header.Set("Content-Type", "application/octet-stream")
+	init.Header.Set("Content-Length", fmt.Sprint(contentLength))
+
+	resp, err := registry.Client.Do(upload)
+	if err != nil {
+		registry.Logf("registry.blob.Monolithic-upload Do request failed url=%s repository=%s error=%s", uploadURL, repository, err.Error())
+
+		return err
+	}
+
+	logrus.WithField("status", initResp.StatusCode).
+		WithField("Docker-Upload-UUID", initResp.Header.Get("Docker-Upload-UUID")).
+		WithField("Range", initResp.Header.Get("Range")).
+		Infof("Monolithic upload resp")
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		registry.Logf("registry.blob.Monolithic-upload read body failed url=%s repository=%s error=%s", uploadURL, repository, err.Error())
+		return err
+	}
+	registry.Logf("registry.blob.Monolithic-upload read body failed url=%s repository=%s body=%s", uploadURL, repository, body)
+
+	return
 }
 
 func (registry *Registry) HasBlob(repository string, digest digest.Digest) (bool, error) {
