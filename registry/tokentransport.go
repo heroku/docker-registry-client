@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 type TokenTransport struct {
@@ -90,7 +91,10 @@ func (authService *authService) Request(username, password string) (*http.Reques
 	q := url.Query()
 	q.Set("service", authService.Service)
 	if authService.Scope != "" {
-		q.Set("scope", authService.Scope)
+		scopes := strings.Split(authService.Scope, " ")
+		for _, scope := range scopes {
+			q.Add("scope", scope)
+		}
 	}
 	url.RawQuery = q.Encode()
 
