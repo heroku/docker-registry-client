@@ -1,8 +1,10 @@
 package registry
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -15,12 +17,28 @@ type TokenTransport struct {
 }
 
 func (t *TokenTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	var body []byte
+	if req.Body != nil {
+		// Read in all the body so we can resend it when we retry
+		// TODO: handle large data better
+		buf, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		body = buf
+		req.Body = ioutil.NopCloser(bytes.NewReader(body))
+	}
+
 	resp, err := t.Transport.RoundTrip(req)
 	if err != nil {
 		return resp, err
 	}
 	if authService := isTokenDemand(resp); authService != nil {
 		resp.Body.Close()
+		if body != nil {
+			req.Body = ioutil.NopCloser(bytes.NewReader(body))
+		}
 		resp, err = t.authAndRetry(authService, req)
 	}
 	return resp, err

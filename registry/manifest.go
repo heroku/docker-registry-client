@@ -131,7 +131,7 @@ func (registry *Registry) PutManifest(repository, reference string, manifest dis
 		return err
 	}
 
-	buffer := bytes.NewBuffer(payload)
+	buffer := bytes.NewReader(payload)
 	req, err := http.NewRequest("PUT", url, buffer)
 	if err != nil {
 		return err
