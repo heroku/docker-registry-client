@@ -8,19 +8,18 @@ linters:
   enable:
     - misspell
     - goimports
-    - golint
+    - revive
     - stylecheck
     - unconvert
     - dupl
     - gosec
-    - scopelint
+    - exportloopref
     - nakedret
     - gochecknoinits
     - goconst
     - gocritic
     - gocyclo
     - lll
-    - maligned
     - prealloc
     - unparam
     - errcheck
